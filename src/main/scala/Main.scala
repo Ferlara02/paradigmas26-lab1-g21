@@ -2,12 +2,15 @@ object Main {
   def main(args: Array[String]): Unit = {
     val header = s"Reddit Post Parser\n${"=" * 40}"
 
-    val subscriptions: List[String] = FileIO.readSubscriptions()
+    val subscriptions: List[(String, String)] = FileIO.readSubscriptions("subscriptions.json")
 
-    val allPosts: List[(String, String)] = subscriptions.map { url =>
-      println(s"Fetching posts from: $url")
+    val allPosts: List[(String, String)] = subscriptions.map { tupla =>
+      val name = tupla._1
+      val url  = tupla._2
+
+      println(s"Fetching posts from: $name")
       val posts = FileIO.downloadFeed(url)
-      (url, posts)
+      (name, posts)
     }
 
     val output = allPosts
