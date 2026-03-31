@@ -4,7 +4,7 @@ object Main {
 
     val subscriptions: List[(String, String)] = FileIO.readSubscriptions("subscriptions.json")
 
-    val allPosts: List[(String, String)] = subscriptions.map { tupla =>
+    val allPosts: List[(String, List[FileIO.Post])] = subscriptions.map { tupla =>
       val name = tupla._1
       val url  = tupla._2
 
@@ -14,7 +14,7 @@ object Main {
     }
 
     val output = allPosts
-      .map { case (url, posts) => Formatters.formatSubscription(url, posts) }
+      .map { case (name, posts) => Formatters.formatSubscription(name, posts) }
       .mkString("\n")
 
     println(output)
