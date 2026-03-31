@@ -5,6 +5,7 @@ import org.json4s.jackson.JsonMethods._
 object FileIO {
 
   type Subscription = (String, String)
+  type Post = (String, String, String) // (subreddit, title, selftext)
 
   // Lee el archivo JSON y devuelve List[Subscription]
   def readSubscriptions(path: String): List[Subscription] = {
@@ -19,9 +20,28 @@ object FileIO {
       .map(sub => (sub("name"), sub("url")))
   }
 
-  // Pure function to download JSON feed from a URL
-  def downloadFeed(url: String): String = {
+  // Obtener la lista de posts
+  def downloadFeed(url: String): List[Post] = {
+    implicit val formats: DefaultFormats.type = DefaultFormats
+
     val source = Source.fromURL(url)
-    source.mkString
+    val content = try source.mkString finally source.close()
+
+    val json = parse(content)
+
+    // Obtengo la lista de posts
+    val children = (json \ "data" \ "children").children
+
+    children.map { child =>
+      val data = child \ "data"
+      
+      // Extraigo campos
+      val subreddit = (data \ "subreddit").extract[String]
+      val title     = (data \ "title").extract[String]
+      val selftext  = (data \ "selftext").extract[String]
+      
+      // Retornamos la tupla con el tipo Post: (String, String, String, String, Int)
+      (subreddit, title, selftext)
+    }
   }
 }
