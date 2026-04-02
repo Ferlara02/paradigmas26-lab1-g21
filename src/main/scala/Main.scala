@@ -10,13 +10,37 @@ object Main {
 
       println(s"Fetching posts from: $name")
       val posts = FileIO.downloadFeed(url)
-      (name, posts)
+      val filtered_post = posts.filter{ case (subreddit,title,selftext) =>
+        title.trim.nonEmpty && selftext.trim.nonEmpty 
+        /*
+          trim fitlra casos "solo espacios" al convertirlos en "" (casos vacíos)
+          y nonEmpty filtra casos vacíos
+        */
+      }
+      (name, filtered_post)
     }
 
     val output = allPosts
       .map { case (name, posts) => Formatters.formatSubscription(name, posts) }
       .mkString("\n")
 
-    println(output)
+    println(output)   
   }
 }
+
+/* Test hardcodeado para fitlrado
+
+val testPosts: List[FileIO.Post] = List(
+      ("scala", "Post con titulo y descripcion", "selftext completo"),
+      ("scala", "", "selftext completo"),          // titulo vacío
+      ("scala", "Post con titulo", ""),            // selftext vacío
+      ("scala", "   ", "   "),                     // solo espacios
+      ("scala", "Post normal", "descripcion normal")
+    )
+
+    val filteredPosts = testPosts.filter { case (subreddit, title, selftext) =>
+      title.trim.nonEmpty && selftext.trim.nonEmpty
+    }
+
+    println(filteredPosts) 
+*/
