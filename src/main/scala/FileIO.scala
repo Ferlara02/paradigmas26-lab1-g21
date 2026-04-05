@@ -8,17 +8,23 @@ object FileIO {
   type Post = (String, String, String) // (subreddit, title, selftext)
 
   // Lee el archivo JSON y devuelve List[Subscription]
-  def readSubscriptions(path: String): List[Subscription] = {
-    implicit val formats: DefaultFormats.type = DefaultFormats
+  def readSubscriptions(path: String): Option[List[Subscription]] = {
+    //Option para devolver None en caso de error
+    try {
+      implicit val formats: DefaultFormats.type = DefaultFormats
 
-    val source = Source.fromFile(path)
-    val content = try source.mkString finally source.close()
+      val source = Source.fromFile(path)
+      val content = try source.mkString finally source.close()
 
-    val json = parse(content)
+      val json = parse(content)
 
-    json.extract[List[Map[String, String]]]
-      .map(sub => (sub("name"), sub("url")))
-  }
+      json.extract[List[Map[String, String]]]
+        .map(sub => (sub("name"), sub("url")))
+    }catch {
+      case e: Exception =>
+        None
+    }
+    
 
   // Obtener la lista de posts
   def downloadFeed(url: String): List[Post] = {
