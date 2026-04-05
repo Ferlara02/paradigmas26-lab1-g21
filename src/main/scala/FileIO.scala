@@ -24,30 +24,36 @@ object FileIO {
       case e: Exception =>
         None
     }
+  }
     
 
   // Obtener la lista de posts
-  def downloadFeed(url: String): List[Post] = {
-    implicit val formats: DefaultFormats.type = DefaultFormats
+  def downloadFeed(url: String): Option[List[Post]] = {
+    try {
+      implicit val formats: DefaultFormats.type = DefaultFormats
 
-    val source = Source.fromURL(url)
-    val content = try source.mkString finally source.close()
+      val source = Source.fromURL(url)
+      val content = try source.mkString finally source.close()
 
-    val json = parse(content)
+      val json = parse(content)
 
-    // Obtengo la lista de posts
-    val children = (json \ "data" \ "children").children
+      // Obtengo la lista de posts
+      val children = (json \ "data" \ "children").children
 
-    children.map { child =>
-      val data = child \ "data"
+      children.map { child =>
+        val data = child \ "data"
       
-      // Extraigo campos
-      val subreddit = (data \ "subreddit").extract[String]
-      val title     = (data \ "title").extract[String]
-      val selftext  = (data \ "selftext").extract[String]
+        // Extraigo campos
+        val subreddit = (data \ "subreddit").extract[String]
+        val title     = (data \ "title").extract[String]
+        val selftext  = (data \ "selftext").extract[String]
       
-      // Retornamos la tupla con el tipo Post: (String, String, String, String, Int)
-      (subreddit, title, selftext)
+        // Retornamos la tupla con el tipo Post: (String, String, String, String, Int)
+        (subreddit, title, selftext)
+      }
+    } catch {
+      case e: Exception =>
+        None
     }
   }
 }
