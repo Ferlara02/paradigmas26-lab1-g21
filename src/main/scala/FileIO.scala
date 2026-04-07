@@ -18,8 +18,8 @@ object FileIO {
 
       val json = parse(content)
 
-      json.extract[List[Map[String, String]]]
-        .map(sub => (sub("name"), sub("url")))
+      Some(json.extract[List[Map[String, String]]]
+        .map(sub => (sub("name"), sub("url"))))
     }catch {
       case e: Exception =>
         None
@@ -40,7 +40,7 @@ object FileIO {
       // Obtengo la lista de posts
       val children = (json \ "data" \ "children").children
 
-      children.map { child =>
+      Some{ children.map { child =>
         val data = child \ "data"
       
         // Extraigo campos
@@ -50,6 +50,7 @@ object FileIO {
       
         // Retornamos la tupla con el tipo Post: (String, String, String, String, Int)
         (subreddit, title, selftext)
+      }
       }
     } catch {
       case e: Exception =>

@@ -2,14 +2,15 @@ object Main {
   def main(args: Array[String]): Unit = {
     val header = s"Reddit Post Parser\n${"=" * 40}"
 
-    val subscriptions: List[(String, String)] = FileIO.readSubscriptions("subscriptions.json")
+    //getOrElse(List.empty) devuelve lista vacía si se produce fallo
+    val subscriptions: List[(String, String)] = FileIO.readSubscriptions("subscriptions.json").getOrElse(List.empty)
 
     val allPosts: List[(String, List[FileIO.Post])] = subscriptions.map { tupla =>
       val name = tupla._1
       val url  = tupla._2
 
       println(s"Fetching posts from: $name")
-      val posts = FileIO.downloadFeed(url)
+      val posts = FileIO.downloadFeed(url).getOrElse(List.empty)
       val filtered_post = posts.filter{ case (subreddit,title,selftext) =>
         title.trim.nonEmpty && selftext.trim.nonEmpty 
         /*
