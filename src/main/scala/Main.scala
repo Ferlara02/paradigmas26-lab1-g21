@@ -36,21 +36,46 @@ object Main {
 
       println(s"Fetching posts from: $name")
       val posts = FileIO.downloadFeed(url).getOrElse(List.empty)
-      val filtered_post = posts.filter{ case (subreddit,title,selftext,date) =>
+      val filtered_post = posts.filter{ case (subreddit,title, selftext, date, score, url) =>
         title.trim.nonEmpty && selftext.trim.nonEmpty 
         /*
           trim fitlra casos "solo espacios" al convertirlos en "" (casos vacíos)
           y nonEmpty filtra casos vacíos
         */
-      }
+      }.sortBy(-_._5) // Ordena por score descendente para que los "primeros" sean los más votados
+
       (name, filtered_post)
     }
 
-    val output = allPosts
-      .map { case (name, posts) => Formatters.formatSubscription(name, posts) }
-      .mkString("\n")
+    // Calculamos la frecuencia de palabras por subreddit
+    val frequenciesBySubscription: Map[String, Seq[(String, Int)]] =
+      FileIO.wordsFrequency(allPosts, stopwords).toMap
 
-    println(output)   
+    //Elije los 10 términos más frecuentes de cada subreddit y los muestra junto con el total de score y los 5 posts más votados
+    def formatTopPosts(posts: List[FileIO.Post]): String =
+      posts.take(5).zipWithIndex.map { case ((_, title, _, date, _, url), idx) =>
+        s"${idx + 1}. $title\n  Date: $date\n  URL: $url"
+      }.mkString("\n")
+
+    //generamos la salida para cada subreddit con su total de score, palabras frecuentes y top posts
+    val output = allPosts.map { case (name, posts) =>
+      val totalScore = FileIO.totalScore(posts)
+      val topWords = frequenciesBySubscription.getOrElse(name, Seq.empty).take(10)
+      val topPosts = formatTopPosts(posts)
+
+      s"""
+    ====================================================================================================
+    Subscription: $name
+    ====================================================================================================
+    Total score: $totalScore
+    Frequent words: ${topWords}
+
+    Top 5 posts:
+    $topPosts"""
+      }.mkString("\n")
+
+    println(header)
+    println(output)  
   }
 }
 
