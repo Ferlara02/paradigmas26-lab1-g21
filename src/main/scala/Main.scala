@@ -36,7 +36,7 @@ object Main {
 
       println(s"Fetching posts from: $name")
       val posts = FileIO.downloadFeed(url).getOrElse(List.empty)
-      val filtered_post = posts.filter{ case (subreddit,title,selftext) =>
+      val filtered_post = posts.filter{ case (subreddit,title,selftext,date) =>
         title.trim.nonEmpty && selftext.trim.nonEmpty 
         /*
           trim fitlra casos "solo espacios" al convertirlos en "" (casos vacíos)

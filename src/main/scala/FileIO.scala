@@ -5,7 +5,7 @@ import org.json4s.jackson.JsonMethods._
 object FileIO {
 
   type Subscription = (String, String)
-  type Post = (String, String, String) // (subreddit, title, selftext)
+  type Post = (String, String, String, String) // (subreddit, title, selftext, date)
 
   // Lee el archivo JSON y devuelve List[Subscription]
   def readSubscriptions(path: String): Option[List[Subscription]] = {
@@ -49,7 +49,12 @@ object FileIO {
         val selftext  = (data \ "selftext").extract[String]
       
         // Retornamos la tupla con el tipo Post: (String, String, String, String, Int)
-        (subreddit, title, selftext)
+
+        val createdUtc = (data \ "created_utc").extract[Double].toLong
+        val date = createdUtc.toString // Convertir a String para mantener el tipo Post
+
+
+        (subreddit, title, selftext, date)
       }
       }
     } catch {
@@ -68,7 +73,7 @@ object FileIO {
       case (subreddit, postsList) => 
         //Extraemos todas las palabras de los posts
         val upperWords = postsList.flatMap{
-          case (_, _, selftext) =>
+          case (_, _, selftext, _) =>
             selftext.split("[,*/:'’.)\\(!?\\s)]+").filter( word => 
               word.nonEmpty && 
               word.head.isUpper && // Si va primero y llega string vacía salta excepción
