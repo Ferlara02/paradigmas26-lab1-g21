@@ -16,7 +16,7 @@ object TextProcessing {
 object FileIO {
 
   type Subscription = (String, String)
-  type Post = (String, String, String, String) // (subreddit, title, selftext, date)
+  type Post = (String, String, String, String, Int, String) // (subreddit, title, selftext, date, score, url)
 
   // Lee el archivo JSON y devuelve List[Subscription]
   def readSubscriptions(path: String): Option[List[Subscription]] = {
@@ -58,14 +58,16 @@ object FileIO {
         val subreddit = (data \ "subreddit").extract[String]
         val title     = (data \ "title").extract[String]
         val selftext  = (data \ "selftext").extract[String]
+        val score     = (data \ "score").extract[Int]
+        val url       = (data \ "url").extract[String]
       
         // Retornamos la tupla con el tipo Post: (String, String, String, String, Int)
 
         val createdUtc = (data \ "created_utc").extract[Double].toLong
-        val date = TextProcessing.formatDateFromUTC(createdUtc)
+        val date = TextProcessing.formatDateFromUTC(createdUtc) // Convertir a String para mantener el tipo Post
 
 
-        (subreddit, title, selftext, date)
+        (subreddit, title, selftext, date, score, url)
       }
       }
     } catch {
@@ -84,7 +86,7 @@ object FileIO {
       case (subreddit, postsList) => 
         //Extraemos todas las palabras de los posts
         val upperWords = postsList.flatMap{
-          case (_, _, selftext, _) =>
+          case (_, _, selftext, _, _, _) =>
             selftext.split("[,*/:'’.)\\(!?\\s)]+").filter( word => 
               word.nonEmpty && 
               word.head.isUpper && // Si va primero y llega string vacía salta excepción
@@ -127,4 +129,13 @@ object FileIO {
           .map(_._2.take(10))               // toma las 10 palabras más frecuentes
     */
   }
+
+  //Calcula el score total de una lista de posts
+  def totalScore(posts: List[FileIO.Post]): Int = {
+    posts.foldLeft(0){ (acc, post) =>
+    acc + post._5 // score es el quinto elemento de la tupla Post
+    }
+  }
+
+
 }
