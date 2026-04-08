@@ -1,6 +1,17 @@
 import scala.io.Source
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
+object TextProcessing {
+  def formatDateFromUTC(createdUtc: Long): String = {
+    val instant = Instant.ofEpochSecond(createdUtc)
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
+    formatter.format(instant)
+  }
+}
 
 object FileIO {
 
@@ -51,7 +62,7 @@ object FileIO {
         // Retornamos la tupla con el tipo Post: (String, String, String, String, Int)
 
         val createdUtc = (data \ "created_utc").extract[Double].toLong
-        val date = createdUtc.toString // Convertir a String para mantener el tipo Post
+        val date = TextProcessing.formatDateFromUTC(createdUtc)
 
 
         (subreddit, title, selftext, date)
