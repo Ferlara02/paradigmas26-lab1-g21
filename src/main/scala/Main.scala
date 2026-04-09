@@ -61,6 +61,9 @@ object Main {
     val output = allPosts.map { case (name, posts) =>
       val totalScore = FileIO.totalScore(posts)
       val topWords = frequenciesBySubscription.getOrElse(name, Seq.empty).take(10)
+      val formattedWords = topWords
+        .map { case (word, count) => s"$word ($count)" }
+        .mkString(", ")
       val topPosts = formatTopPosts(posts)
 
       s"""  |${"=" * 40}
@@ -69,7 +72,7 @@ object Main {
           |
           |Total score: $totalScore
           |
-          |Frequent words: $topWords
+          |Frequent words: $formattedWords
           |
           |Top 5 posts:
           |$topPosts
