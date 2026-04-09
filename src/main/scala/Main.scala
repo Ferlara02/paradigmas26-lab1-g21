@@ -63,35 +63,20 @@ object Main {
       val topWords = frequenciesBySubscription.getOrElse(name, Seq.empty).take(10)
       val topPosts = formatTopPosts(posts)
 
-      s"""
-    ====================================================================================================
-    Subscription: $name
-    ====================================================================================================
-    Total score: $totalScore
-    Frequent words: ${topWords}
-
-    Top 5 posts:
-    $topPosts"""
-      }.mkString("\n")
+      s"""  |${"=" * 40}
+          |Subscription: $name
+          |${"=" * 40}
+          |
+          |Total score: $totalScore
+          |
+          |Frequent words: $topWords
+          |
+          |Top 5 posts:
+          |$topPosts
+          |""".stripMargin
+    }.mkString("\n")
 
     println(header)
     println(output)  
   }
 }
-
-/* Test hardcodeado para fitlrado
-
-val testPosts: List[FileIO.Post] = List(
-      ("scala", "Post con titulo y descripcion", "selftext completo"),
-      ("scala", "", "selftext completo"),          // titulo vacío
-      ("scala", "Post con titulo", ""),            // selftext vacío
-      ("scala", "   ", "   "),                     // solo espacios
-      ("scala", "Post normal", "descripcion normal")
-    )
-
-    val filteredPosts = testPosts.filter { case (subreddit, title, selftext) =>
-      title.trim.nonEmpty && selftext.trim.nonEmpty
-    }
-
-    println(filteredPosts) 
-*/
